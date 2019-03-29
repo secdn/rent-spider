@@ -1,0 +1,8 @@
+version: '3'
+services:
+  python:
+    build: .
+    restart: always
+    volumes:
+      - .:/app
+    command: nohup python main.py &>> /app/douban_spider.log
