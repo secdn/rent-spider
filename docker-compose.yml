@@ -1,8 +1,9 @@
 version: '3'
 services:
   python:
+    container_name: monitor_douban_spider
     build: .
     restart: always
     volumes:
       - .:/app
-    command: nohup python main.py &>> /app/douban_spider.log
+    command: nohup python main.py &>> ./douban_spider.log
