@@ -17,7 +17,6 @@ import config
 from init_logger import init_logger
 from mail import send_mail, add_error_log_mail_handler
 
-
 logger = logging.getLogger(__name__)
 
 system = config.mail['subject_prefix']
@@ -117,24 +116,28 @@ def get_all_group_rooms():
 def get_new_rooms():
     rooms_select = get_all_group_rooms()
     rooms_dict = dict(rooms_select)
+    logger.info("去重前房源数为 " + str(len(rooms_dict)) + " ")
     added_rooms = Diff(rooms_dict).get_added_items()
-    return added_rooms
+    added_rooms_dict = dict(added_rooms)
+    logger.info("去重后房源数为 " + str(len(added_rooms_dict)) + " ")
+    return added_rooms_dict
 
 
 def send_room_mail(room_url, room_title):
+    logger.info("开始发送邮件:" + room_url)
     room_desc_div = DoubanRentSpider().get_room_desc_div(room_url)
     content = '''
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    </head>
-    <body>
-        <a href="{url}">原文链接</a>
-        {div}
-    </body>
-</html>
-'''.format(url=room_url, div=room_desc_div)
-    
+            <html>
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+                </head>
+                <body>
+                    <a href="{url}">原文链接</a>
+                    {div}
+                </body>
+            </html>
+            '''.format(url=room_url, div=room_desc_div)
+
     send_mail(
         to=receive_mail_addresses,
         subject=room_title,
@@ -142,14 +145,16 @@ def send_room_mail(room_url, room_title):
         type='html',
         system=system
     )
+    logger.info("发送邮件成功:" + room_url)
 
 
 def monitor_rooms():
     while True:
         new_rooms = get_new_rooms()
-        for url, title in new_rooms:
+        for url, title in new_rooms.items():
+            logger.info("新发布房源详情 标题: " + title + " URL: " + url)
             send_room_mail(url, title)
-            time.sleep(5)
+            time.sleep(random.randint(10, 20))
         time.sleep(60 * random.randint(10, 30))
 
 
